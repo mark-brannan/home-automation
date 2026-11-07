@@ -1,0 +1,11 @@
+# Who can decrypt this repo's secrets files.
+recipients: &recipients
+  # Working key; private half at ~/.config/sops/age/keys.txt, never in git.
+  - age16xptea77u3806d20c2yjktfcfj06p2cwqrw84zktrhzys768e9ss0027gk
+  # Escrow key; recovery only.
+  - age1a8je25wsr5x7vqznc7zfxjw9jswrwpallp5aphrtxsrcu7ws7shsvdez3q
+
+creation_rules:
+  - path_regex: .*\.sops\.ya?ml$
+    key_groups:
+      - age: *recipients
