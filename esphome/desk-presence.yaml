@@ -20,6 +20,9 @@ packages:
 # Quick look at http://desk-presence.local/ without Home Assistant.
 web_server:
   port: 80
+  auth:
+    username: admin
+    password: !secret web_password
 
 # LD2410C TX -> ESP32 GPIO16 (RX2); LD2410C RX -> ESP32 GPIO17 (TX2).
 uart:

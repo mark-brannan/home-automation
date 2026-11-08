@@ -36,7 +36,7 @@ esphome run esphome/desk-presence.yaml     # first flash over USB
 rm esphome/secrets.yaml                    # when done
 ```
 
-Later flashes go over the air. Quick look: http://desk-presence.local/ (it is plain HTTP on the LAN with no login).
+Later flashes go over the air. Quick look: http://desk-presence.local/ (plain HTTP on the LAN; log in as `admin` with `web_password` from the decrypted secrets).
 
 ## Tuning (no reflash)
 
