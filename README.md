@@ -19,3 +19,10 @@ ESPHome device configs and Home Assistant config for the home and the desk.
 ```bash
 sops -d esphome/secrets.sops.yaml > esphome/secrets.yaml
 ```
+
+## Checks
+
+CI (`.github/workflows/`) runs yamllint, a plaintext-secrets check
+(`scripts/verify_encrypted.py`), `esphome config` over `esphome/*.yaml`, and a
+full-history secret scan. The same secrets check runs locally through
+pre-commit (`.pre-commit-config.yaml`). Conventions for agents: `CLAUDE.md`.

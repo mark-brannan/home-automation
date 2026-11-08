@@ -1,0 +1,11 @@
+extends: default
+ignore: |
+  .esphome/
+  homeassistant/.storage/
+rules:
+  line-length: disable        # ESPHome lambdas and URLs run long
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off']   # ESPHome and HA use on/off
