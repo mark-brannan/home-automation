@@ -1,0 +1,5 @@
+# ESPHome native API. Home Assistant adopts the device through this with the
+# same key, so no reflash is needed when HA arrives.
+api:
+  encryption:
+    key: !secret api_encryption_key

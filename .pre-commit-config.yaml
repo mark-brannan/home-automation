@@ -1,0 +1,16 @@
+# Local guard, same checks as CI's secrets-encrypted job. Install once:
+#   pip install pre-commit yamllint && pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: secrets-encrypted
+        name: no plaintext secrets tracked
+        entry: python3 scripts/verify_encrypted.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: yamllint
+        name: yamllint
+        entry: yamllint --strict
+        language: system
+        types: [yaml]
