@@ -22,7 +22,8 @@ sops -d esphome/secrets.sops.yaml > esphome/secrets.yaml
 
 ## Checks
 
-CI (`.github/workflows/`) runs yamllint, a plaintext-secrets check
-(`scripts/verify_encrypted.py`), `esphome config` over `esphome/*.yaml`, and a
-full-history secret scan. The same secrets check runs locally through
-pre-commit (`.pre-commit-config.yaml`). Conventions for agents: `CLAUDE.md`.
+No PRs and no CI: the repo is private and commits go straight to `main`
+(GitHub Actions needs a paid plan or a public repo). The checks run locally:
+`yamllint --strict .`, `scripts/verify_encrypted.py` (also a pre-commit hook,
+`.pre-commit-config.yaml`) and `esphome config` per device.
+Conventions for agents: `CLAUDE.md`.
