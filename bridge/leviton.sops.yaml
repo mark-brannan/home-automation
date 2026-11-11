@@ -1,0 +1,26 @@
+leviton_bridge_name: ENC[AES256_GCM,data:U0lyS7Duuti1aHRemGbzCWA=,iv:GNkzmfjSPfXgh1lU+A6Qp8o1DNuxr0mMa6ED0ujitrI=,tag:K0o9mrIe/apCeQ1SyaQFlA==,type:str]
+leviton_bridge_code: ENC[AES256_GCM,data:6hfaxijgx84=,iv:Gi02JKLtQAdYkbf5iCXQ30q0V175wQrj3rNFWmb5VKY=,tag:GwBmwcSYtzB1xi+aC2G61A==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBtMTk5Q3hOMXlGS0FUYlFR
+            bUhvbk0vNDZONjcwT3prU2N4dGJYYjgyblNvClU2K3p5Yi9qQmJZZ3VUVE5hRXcx
+            eDhnTWF2RWtscUZxME14NXBwSFlvVnMKLS0tIHVuZlpHbVNuanJISEtrZVNMakt0
+            em5SMWJzNXdXYWl6Qk9Ca3RLY244c0EKo4bcPcXdzKwbqC7+Xqtz/p2e995ruISV
+            HxjhISJ8A36ZNELHGc23IKBL1zIjrvpu1CTa6Uq2EuD0/fVAF8wlAA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age16xptea77u3806d20c2yjktfcfj06p2cwqrw84zktrhzys768e9ss0027gk
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAyRjZ5eksvbzRhQ28zMHRQ
+            dlcwTmZTVFBTUE1kS1l4aEI5S1ZEVkJjY1ZFCnhrM0xQWHhUVThvU1BBcFRWa3dr
+            MlJnVnl5WVhpMGNwek1JVGlMbDI5UmsKLS0tIFVlQ3JVRTB1ZkpqQU1XMXNSUXht
+            Ykc2Q3RUc0FnZU9rUHlIMHVQS2RkT2sKu8Z7y9ZNrBHtNnmDGc6lKadA5z2CNP4D
+            whqHntc2gnSovpZbXBsp2fkdrMwTR8UkzKwPhW3GiZnfyKpOc9rPYg==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1a8je25wsr5x7vqznc7zfxjw9jswrwpallp5aphrtxsrcu7ws7shsvdez3q
+    lastmodified: "2026-11-11T04:52:26Z"
+    mac: ENC[AES256_GCM,data:FzIOf5GVEAeNyAQ2mJUtX56ZbY/rI+ce/L4/Gr1dV6Rty9bJdZZI0hOjrdTvKjnSgE8xPZHX7k5sRFUXjkBAzFZtiyCNgH/HHSAjPX2+7g2NqFlyDvpVJIa2cAwjoYyo74XCWKTfQtJqFIaK3EkJ6MTf0TCNRJcvx8u+wQi/2Vc=,iv:+jWh2RZIoALV9AncVZVIzZP7s5lu4vDG8EDJY4AhsSI=,tag:gppSydw3EszI5/R8CO58Tg==,type:str]
+    unencrypted_suffix: _unencrypted
+    version: 3.13.3
