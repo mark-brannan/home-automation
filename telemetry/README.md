@@ -14,10 +14,10 @@ docker compose down       # stop; data stays in the named volumes
 
 | Env var | Default | What it does |
 |---|---|---|
-| `GRAFANA_ADMIN_PASSWORD` | required, no default | Password for Grafana's `admin` user, applied on every start. `docker compose` refuses to start without it. Copy `.env.example` to `.env` and set it. |
+| `GRAFANA_ADMIN_PASSWORD` | required | Grafana `admin` password, set on first start only; later, change it in the UI. |
 | `TELEMETRY_BIND` | `127.0.0.1` | Address the collector and Grafana listen on; `0.0.0.0` to open them to the LAN. |
-| `CLAUDE_CHECKOUT` | unset | Path to a `mark-brannan/claude` checkout; Grafana loads its `dashboards/`, read-only. Unset: the empty `dashboards/` here. |
-| `CLAUDE_METRICS_DB_DIR` | unset | Folder holding `metrics.db` from the claude layer's `bin/metrics-db`; Grafana reads it read-only. Unset: the empty `sqlite/` here, and the SQLite panels show nothing. |
+| `CLAUDE_CHECKOUT` | unset | Path to a `mark-brannan/claude` checkout; Grafana loads its `dashboards/`. |
+| `CLAUDE_METRICS_DB_DIR` | unset | Folder holding `metrics.db` from `bin/metrics-db`; unset, the SQLite panels show nothing. |
 
 ## Ports
 
