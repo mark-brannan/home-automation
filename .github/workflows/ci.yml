@@ -22,7 +22,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.x"
+          python-version: "3.14"
           cache: pip
           cache-dependency-path: requirements-ci.txt
       - run: pip install -r requirements-ci.txt
@@ -60,7 +60,7 @@ jobs:
       - if: steps.devices.outputs.count != '0'
         uses: actions/setup-python@v7
         with:
-          python-version: "3.x"
+          python-version: "3.14"
           cache: pip
           cache-dependency-path: requirements-ci.txt
       - if: steps.devices.outputs.count != '0'
