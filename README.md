@@ -15,6 +15,7 @@ http://homeassistant.local/ (192.168.0.142), plain port 80, no `:8123`. `.local`
 | `homeassistant/` | Home Assistant config directory. |
 | `bridge/` | Scripts that carry device data to consumers outside Home Assistant. |
 | `docs/` | Design notes and decisions. |
+| `telemetry/` | Self-contained Claude telemetry stack: OTel collector, VictoriaMetrics, VictoriaLogs. |
 
 ## Secrets
 
