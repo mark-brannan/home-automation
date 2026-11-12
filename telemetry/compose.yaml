@@ -46,6 +46,7 @@ services:
     environment:
       GF_PLUGINS_PREINSTALL_SYNC: >-
         victoriametrics-metrics-datasource@1.0.1,victoriametrics-logs-datasource@0.34.0,frser-sqlite-datasource@4.0.6
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD (see .env.example)}
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
       GF_ANALYTICS_REPORTING_ENABLED: "false"
