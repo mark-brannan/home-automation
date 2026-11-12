@@ -38,6 +38,32 @@ services:
     ports:
       - "127.0.0.1:9428:9428"
 
+  # A second Grafana, apart from the boat stack's. Data sources and
+  # dashboards come from files; nothing is configured in the UI.
+  grafana:
+    image: grafana/grafana:13.3.1
+    restart: unless-stopped
+    environment:
+      GF_PLUGINS_PREINSTALL_SYNC: >-
+        victoriametrics-metrics-datasource@1.0.1,victoriametrics-logs-datasource@0.34.0,frser-sqlite-datasource@4.0.6
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD (see .env.example)}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      # Unset: the empty folders beside this file, so the stack still comes up.
+      - ${CLAUDE_CHECKOUT:-.}/dashboards:/etc/grafana/dashboards/claude:ro
+      - ${CLAUDE_METRICS_DB_DIR:-./sqlite}:/var/lib/claude-sqlite:ro
+    ports:
+      - "${TELEMETRY_BIND:-127.0.0.1}:3030:3000"
+    depends_on:
+      - victoriametrics
+      - victorialogs
+
 volumes:
   vm-data:
   vl-data:
+  grafana-data:

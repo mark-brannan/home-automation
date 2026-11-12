@@ -1,0 +1,30 @@
+# Data sources, by the uids the Claude dashboards expect
+# (mark-brannan/claude dashboards/README.md). Edit here, not in the UI.
+apiVersion: 1
+
+datasources:
+  - name: VictoriaMetrics
+    uid: victoriametrics
+    type: victoriametrics-metrics-datasource
+    access: proxy
+    url: http://victoriametrics:8428
+    isDefault: true
+    editable: false
+
+  - name: VictoriaLogs
+    uid: victorialogs
+    type: victoriametrics-logs-datasource
+    access: proxy
+    url: http://victorialogs:9428
+    editable: false
+
+  # metrics.db from the claude layer's bin/metrics-db, opened read-only
+  # (and mounted read-only in compose.yaml).
+  - name: Claude SQLite
+    uid: claude-sqlite
+    type: frser-sqlite-datasource
+    editable: false
+    jsonData:
+      path: /var/lib/claude-sqlite/metrics.db
+      pathPrefix: "file:"
+      pathOptions: "?mode=ro"
