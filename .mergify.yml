@@ -1,0 +1,5 @@
+# The Mergify automation is shared: mark-brannan/.github/.mergify.yml keeps
+# open pull requests up to date with main, merges dependabot once the gate is
+# green, and offers the queue on request. Override a rule by restating it here
+# under the same name.
+extends: .github

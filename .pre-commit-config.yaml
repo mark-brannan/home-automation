@@ -1,4 +1,4 @@
-# Local guard, same checks as the old secrets-encrypted CI job. Install once:
+# Local guard, same checks as CI's secrets-encrypted job. Install once:
 #   pip install pre-commit yamllint && pre-commit install
 repos:
   - repo: local
