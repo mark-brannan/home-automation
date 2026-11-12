@@ -1,0 +1,13 @@
+# Dashboards from a mark-brannan/claude checkout ($CLAUDE_CHECKOUT/dashboards,
+# mounted read-only in compose.yaml). Change them there, never in the UI.
+apiVersion: 1
+
+providers:
+  - name: claude
+    folder: Claude
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 60
+    options:
+      path: /etc/grafana/dashboards/claude
