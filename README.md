@@ -2,6 +2,10 @@
 
 ESPHome device configs and Home Assistant config for the home and the desk.
 
+## Home Assistant
+
+http://homeassistant.local/ (192.168.0.142), plain port 80, no `:8123`. `.local` resolves from Windows, not from WSL; from WSL use the IP.
+
 ## Layout
 
 | Path | What lives there |

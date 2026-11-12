@@ -8,10 +8,10 @@ These endpoints (/api/onboarding/*) are NOT a documented/stable public API
 -- they're what the onboarding frontend itself calls, reverse-engineered
 from Home Assistant core's test suite (tests/components/onboarding/).
 They can change between core versions. If a step 400s, the fallback is
-always: open http://<host>:8123 and finish that one step by hand.
+always: open http://<host>/ and finish that one step by hand.
 
 Usage:
-    python3 onboard.py --host 192.168.0.XXX \
+    python3 onboard.py --host homeassistant.local   # or host:port if not on port 80 \
         --name "Solace" --username admin --password '...' \
         --location-name Home --lat 00.0 --lon -000.0 \
         --elevation 0 --unit-system metric --time-zone America/Los_Angeles
@@ -25,7 +25,7 @@ import requests
 
 
 def api(host):
-    return f"http://{host}:8123/api"
+    return f"http://{host}/api"
 
 
 def onboarding_status(host):
@@ -42,7 +42,7 @@ def create_user(host, name, username, password, language="en"):
     r = requests.post(
         f"{api(host)}/onboarding/users",
         json={
-            "client_id": f"http://{host}:8123/",
+            "client_id": f"http://{host}/",
             "name": name,
             "username": username,
             "password": password,
@@ -56,11 +56,11 @@ def create_user(host, name, username, password, language="en"):
 
 def exchange_token(host, auth_code):
     r = requests.post(
-        f"http://{host}:8123/auth/token",
+        f"http://{host}/auth/token",
         data={
             "grant_type": "authorization_code",
             "code": auth_code,
-            "client_id": f"http://{host}:8123/",
+            "client_id": f"http://{host}/",
         },
         timeout=10,
     )
@@ -97,7 +97,7 @@ def finish_integration_step(host, token):
     r = requests.post(
         f"{api(host)}/onboarding/integration",
         headers={"Authorization": f"Bearer {token}"},
-        json={"client_id": f"http://{host}:8123/"},
+        json={"client_id": f"http://{host}/"},
         timeout=15,
     )
     r.raise_for_status()
@@ -153,7 +153,7 @@ def main():
     finish_analytics_step(args.host, token)
 
     print()
-    print(f"Done. Log in at http://{args.host}:8123 as '{args.username}'.")
+    print(f"Done. Log in at http://{args.host} as '{args.username}'.")
     print("From there: Settings > Add-ons > Add-on Store for ESPHome, "
           "Mosquitto, SSH & Web Terminal, etc.")
 
