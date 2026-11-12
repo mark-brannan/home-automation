@@ -11,6 +11,7 @@ ESPHome device configs and Home Assistant config for the home and the desk.
 | `homeassistant/` | Home Assistant config directory. |
 | `bridge/` | Scripts that carry device data to consumers outside Home Assistant. |
 | `docs/` | Design notes and decisions. |
+| `telemetry/` | Self-contained Claude telemetry stack: OTel collector, VictoriaMetrics, VictoriaLogs. |
 
 ## Secrets
 
