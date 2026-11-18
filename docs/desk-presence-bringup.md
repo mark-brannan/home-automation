@@ -32,7 +32,7 @@ On an ESP8266 (D1 mini):
 | TX | D7 / GPIO13 (UART0 RX, swapped) |
 | RX | D8 / GPIO15 (UART0 TX, swapped) |
 
-The ESP8266 has one full hardware UART and the radar's 256000 baud is too fast for software serial, so the radar takes UART0 on its swapped pins and the logger moves to UART1 (TX only, D4). Logs still stream over the API. GPIO15 must be low at boot; if the board will not boot with the radar attached, suspect that pin. The page shows **Free Heap**; watch it to judge whether the web page is worth its RAM.
+USB serial carries no logs on this board (the radar has UART0); read them over the API with `esphome logs`. GPIO15 must be low at boot; if the board will not boot with the radar attached, suspect that pin. The page shows **Free Heap**; watch it to judge whether the web page is worth its RAM.
 
 TX and RX cross. The module takes 5 V power and its serial lines are 3.3 V. Mount it under the desk aimed at the seat, about 1 m away, with nothing moving in its view (a fan, a curtain).
 
