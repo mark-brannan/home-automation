@@ -32,7 +32,7 @@ On an ESP8266 (D1 mini):
 | TX | D7 / GPIO13 (UART0 RX, swapped) |
 | RX | D8 / GPIO15 (UART0 TX, swapped) |
 
-USB serial carries no logs on this board (the radar has UART0); read them over the API with `esphome logs`. GPIO15 must be low at boot; if the board will not boot with the radar attached, suspect that pin. The page shows **Free Heap**; watch it to judge whether the web page is worth its RAM.
+USB serial carries no logs on this board (the radar has UART0); read them over the API with `esphome logs`. With the radar on D8, USB flashing fails ("No serial data received"): unplug the D8 wire to flash over USB, or flash over the air. GPIO15 must be low at boot; if the board will not boot with the radar attached, suspect that pin. The page shows **Free Heap**; watch it to judge whether the web page is worth its RAM.
 
 TX and RX cross. The module takes 5 V power and its serial lines are 3.3 V. Mount it under the desk aimed at the seat, about 1 m away, with nothing moving in its view (a fan, a curtain).
 
