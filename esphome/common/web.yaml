@@ -1,0 +1,9 @@
+# Quick look at http://${name}.local/ without Home Assistant.
+web_server:
+  port: 80
+  # Serve the page's script from flash, not from oi.esphome.io, so the page
+  # renders without internet access or a reachable CDN.
+  local: true
+  auth:
+    username: admin
+    password: !secret web_password

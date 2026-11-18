@@ -1,12 +1,12 @@
 # Desk presence: bring-up
 
-An ESP32 and an HLK-LD2410C mmWave radar under the desk report whether someone is in the chair. Config: `esphome/desk-presence.yaml`. The device works alone (ESPHome native API plus a web page) and Home Assistant can adopt it later without a reflash.
+An ESP32 or ESP8266 and an HLK-LD2410C mmWave radar under the desk report whether someone is in the chair. Config: `esphome/desk-presence.yaml` (ESP32) or `esphome/desk-presence-esp8266.yaml` (ESP8266, Wemos D1 mini); both share the radar entities in `esphome/common/ld2410.yaml`. Flash one of them; they use the same device name. The device works alone (ESPHome native API plus a web page) and Home Assistant can adopt it later without a reflash.
 
 ## Parts (prices are guesses)
 
 | Part | Guess |
 |---|---|
-| ESP32 dev board (ESP32-WROOM, 30 or 38 pin) | $8 |
+| ESP32 dev board (ESP32-WROOM, 30 or 38 pin), or an ESP8266 D1 mini | $8 |
 | HLK-LD2410C module | $5 |
 | LD2410 breakout board, or a 1.27 mm to 2.54 mm cable | $3 |
 | Dupont jumper wires, micro-USB or USB-C cable, 5 V supply | $5 |
@@ -23,6 +23,17 @@ The LD2410C's header is 1.27 mm pitch, not the 2.54 mm of a breadboard. Buy the 
 | TX | GPIO16 (UART2 RX) |
 | RX | GPIO17 (UART2 TX) |
 
+On an ESP8266 (D1 mini):
+
+| LD2410C | D1 mini |
+|---|---|
+| 5V | 5V |
+| GND | GND |
+| TX | D7 / GPIO13 (UART0 RX, swapped) |
+| RX | D8 / GPIO15 (UART0 TX, swapped) |
+
+USB serial carries no logs on this board (the radar has UART0); read them over the API with `esphome logs`. With the radar on D8, USB flashing fails ("No serial data received"): unplug the D8 wire to flash over USB, or flash over the air. GPIO15 must be low at boot; if the board will not boot with the radar attached, suspect that pin. The page shows **Free Heap**; watch it to judge whether the web page is worth its RAM.
+
 TX and RX cross. The module takes 5 V power and its serial lines are 3.3 V. Mount it under the desk aimed at the seat, about 1 m away, with nothing moving in its view (a fan, a curtain).
 
 ## Secrets and flashing
@@ -32,7 +43,7 @@ Secrets live encrypted in `esphome/secrets.sops.yaml` (placeholders for wifi and
 ```bash
 sops -d esphome/secrets.sops.yaml > esphome/secrets.yaml   # gitignored
 pipx install esphome
-esphome run esphome/desk-presence.yaml     # first flash over USB
+esphome run esphome/desk-presence.yaml     # first flash over USB (or desk-presence-esp8266.yaml)
 rm esphome/secrets.yaml                    # when done
 ```
 

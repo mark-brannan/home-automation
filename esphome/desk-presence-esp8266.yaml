@@ -1,0 +1,45 @@
+# Desk chair presence: ESP8266 (Wemos D1 mini) + HLK-LD2410C mmWave radar.
+# Bring-up and tuning: docs/desk-presence-bringup.md
+substitutions:
+  name: desk-presence
+  friendly_name: Desk Presence
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+
+esp8266:
+  board: d1_mini
+
+packages:
+  wifi: !include common/wifi.yaml
+  api: !include common/api.yaml
+  ota: !include common/ota.yaml
+  logger: !include common/logger.yaml
+  web: !include common/web.yaml
+  radar: !include common/ld2410.yaml
+
+# The ESP8266 has one full hardware UART, and 256000 baud is too fast for
+# software serial. The radar takes UART0 on its swapped pins, so the logger
+# moves to UART1 (TX only, GPIO2 / D4); logs still stream over the API.
+logger:
+  hardware_uart: UART1
+
+# LD2410C TX -> GPIO13 (D7, UART0 RX swapped); LD2410C RX -> GPIO15 (D8,
+# UART0 TX swapped). GPIO15 must be low at boot; the D1 mini pulls it down.
+uart:
+  id: uart_bus
+  rx_pin: GPIO13
+  tx_pin: GPIO15
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1
+
+# Free heap, to judge whether the web page is worth its RAM on this chip.
+debug:
+  update_interval: 60s
+
+sensor:
+  - platform: debug
+    free:
+      name: Free Heap
