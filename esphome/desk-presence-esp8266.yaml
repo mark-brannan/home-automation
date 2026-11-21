@@ -26,6 +26,10 @@ packages:
 logger:
   hardware_uart: UART1
 
+# Power save sleeps through multicast, so desk-presence.local never answers.
+wifi:
+  power_save_mode: none
+
 # LD2410C TX -> GPIO13 (D7, UART0 RX swapped); LD2410C RX -> GPIO15 (D8,
 # UART0 TX swapped). GPIO15 must be low at boot; the D1 mini pulls it down.
 uart:
