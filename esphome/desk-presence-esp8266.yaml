@@ -55,11 +55,10 @@ i2c:
   sda: GPIO4   # D2
   scl: GPIO5   # D1
 
-# 4 rows of about 10 characters; each row cycles every 4 s, as halmet's row 0 does.
 font:
-  - file: "gfonts://Silkscreen"
-    id: small
-    size: 16
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 14
 
 display:
   - platform: tm1637
@@ -69,75 +68,53 @@ display:
     update_interval: 1s
     lambda: |-
       it.printf("%02d.%02d", (id(sit_s) / 60) % 100, id(sit_s) % 60);
-  # Rows, each cycling on its own 4 s beat: 0 desk state, 1 sitting stats,
-  # 2 network (JOINING / AP FALLBACK off the LAN), 3 uptime and restart reason.
+  # Three lines; rotating ones step every 4 s, as halmet's network row does.
+  # 1 presence: AWAY counting up, or PRESENT / FAR with radar energies between.
+  # 2 network: host, IP, MAC, SSID / RSSI; JOINING or AP FALLBACK off the LAN.
+  # 3 uptime, then the last restart reason (skipped after a power-on).
   - platform: ssd1306_i2c
     model: "SSD1306 128x64"   # an SH1106 needs model: "SH1106 128x64"
     address: 0x3C
     update_interval: 1s
     lambda: |-
-      auto f = id(small);
+      auto f = id(roboto);
       const uint32_t up = id(up_s);
       const uint32_t beat = up / 4;
-      auto hm = [](int s, char *b, const char *pre) {
-        if (s < 3600) sprintf(b, "%s%02d:%02d", pre, s / 60, s % 60);
-        else sprintf(b, "%s%dH%02d", pre, s / 3600, s / 60 % 60);
-      };
-      char b[24];
 
-      // 0: where you are
       if (!id(presence).state) {
-        hm(id(away_s), b, "AWAY ");
-        it.print(0, 0, f, b);
+        const int a = id(away_s);
+        if (a < 3600) it.printf(0, 0, f, "AWAY %02d:%02d", a / 60, a % 60);
+        else it.printf(0, 0, f, "AWAY %d:%02d:%02d", a / 3600, a / 60 % 60, a % 60);
+      } else if (beat % 2) {
+        it.printf(0, 0, f, "move %.0f still %.0f", id(move_e).state, id(still_e).state);
       } else {
-        const char *where = id(distance).state <= id(desk_cm).state ? "DESK" : "FAR";
-        switch (beat % 3) {
-          case 0: it.printf(0, 0, f, "%s %.2fM", where, id(distance).state / 100); break;
-          case 1: it.printf(0, 0, f, "MOVE E%.0f", id(move_e).state); break;
-          default: it.printf(0, 0, f, "STILL E%.0f", id(still_e).state);
-        }
+        const float cm = id(distance).state;
+        it.printf(0, 0, f, "%s %.0f cm", cm <= id(desk_cm).state ? "PRESENT" : "FAR", cm);
       }
 
-      // 1: this sitting and today
-      const int left = 3000 - id(sit_s);   // the 50 min nag
-      switch (beat % 6) {
-        case 0: it.printf(0, 16, f, "STILL %dM", id(still_s) / 60); break;
-        case 1:
-          if (left > 0) it.printf(0, 16, f, "NAG %02d:%02d", left / 60, left % 60);
-          else it.printf(0, 16, f, "NAG +%dM", -left / 60);
-          break;
-        case 2: it.printf(0, 16, f, "TODAY %dH%02d", id(today_s) / 3600, id(today_s) / 60 % 60); break;
-        case 3: it.printf(0, 16, f, "%d SITS", id(today_sits)); break;
-        case 4: it.printf(0, 16, f, "LONG %dH%02d", id(today_longest) / 3600, id(today_longest) / 60 % 60); break;
-        default: it.printf(0, 16, f, "%d BREAKS", id(today_breaks));
-      }
-
-      // 2: network
       if (WiFi.status() == WL_CONNECTED) {
-        IPAddress ip = WiFi.localIP();
-        switch (beat % 3) {
-          case 0: it.printf(0, 32, f, "IP .%d.%d", ip[2], ip[3]); break;
-          case 1: it.printf(0, 32, f, "WIFI %dDB", (int) WiFi.RSSI()); break;
-          default: it.printf(0, 32, f, "%.9s", WiFi.SSID().c_str());
+        switch (beat % 4) {
+          case 0: it.print(0, 22, f, App.get_name().c_str()); break;
+          case 1: it.print(0, 22, f, WiFi.localIP().toString().c_str()); break;
+          case 2: it.print(0, 22, f, WiFi.macAddress().c_str()); break;
+          default: it.printf(0, 22, f, "%.9s / %ddB", WiFi.SSID().c_str(), (int) WiFi.RSSI());
         }
       } else if ((WiFi.getMode() & WIFI_AP) && beat % 2) {
-        it.print(0, 32, f, "AP FALLBK");
+        it.print(0, 22, f, "AP FALLBACK");
       } else {
-        it.printf(0, 32, f, "JOINING %d", id(join_s));
+        it.printf(0, 22, f, "JOINING %ds", id(join_s));
       }
 
-      // 3: uptime, then why it last restarted (skipped after a power-on)
       const char *why = nullptr;
       switch (ESP.getResetInfoPtr()->reason) {
         case REASON_DEFAULT_RST: break;
-        case REASON_WDT_RST: why = "HW WDT"; break;
-        case REASON_EXCEPTION_RST: why = "CRASH"; break;
-        case REASON_SOFT_WDT_RST: why = "SW WDT"; break;
-        case REASON_SOFT_RESTART: why = "RESTART"; break;
-        case REASON_DEEP_SLEEP_AWAKE: why = "WAKE"; break;
-        case REASON_EXT_SYS_RST: why = "EXT PIN"; break;
-        default: why = "RESET ?";
+        case REASON_WDT_RST: why = "hw watchdog"; break;
+        case REASON_EXCEPTION_RST: why = "crash"; break;
+        case REASON_SOFT_WDT_RST: why = "sw watchdog"; break;
+        case REASON_SOFT_RESTART: why = "restart"; break;
+        case REASON_DEEP_SLEEP_AWAKE: why = "wake"; break;
+        case REASON_EXT_SYS_RST: why = "ext pin"; break;
+        default: why = "unknown";
       }
-      if (why && beat % 2) it.print(0, 48, f, why);
-      else if (up < 86400) it.printf(0, 48, f, "UP %uH%02u", up / 3600, up / 60 % 60);
-      else it.printf(0, 48, f, "UP %uD %02uH", up / 86400, up / 3600 % 24);
+      if (why && beat % 2) it.printf(0, 44, f, "Restart: %s", why);
+      else it.printf(0, 44, f, "Up %ud %02u:%02u:%02u", up / 86400, up / 3600 % 24, up / 60 % 60, up % 60);
