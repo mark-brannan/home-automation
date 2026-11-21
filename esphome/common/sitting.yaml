@@ -1,5 +1,7 @@
-# Sitting timer: counts while the radar sees you within Desk distance; holds while
-# away (FAR, or past the radar's range); clears after 5 min away.
+# Sitting timer: counts while the radar sees you within Desk distance; pauses while
+# FAR (seen past it); while away (past the radar's range) holds, and clears after
+# 5 min away. "Today" rolls over on your return from a night's absence, not at
+# midnight: away 1 h or more with some of it in 22:00-06:00, or 6 h with no clock.
 # Needs presence, moving, distance from common/ld2410.yaml. Published to Home Assistant.
 globals:
   - id: sit_s          # seconds at the desk, this sitting
@@ -29,6 +31,9 @@ globals:
   - id: today_breaks   # absences of 5 min or more today
     type: int
     initial_value: "0"
+  - id: away_night     # this absence has touched 22:00-06:00
+    type: bool
+    initial_value: "false"
 
 # Beyond this the radar still sees you, but you are FAR, not at the desk.
 # Widen Max Move/Still Distance Gate past it, or FAR never shows.
@@ -50,16 +55,24 @@ interval:
       - lambda: |-
           id(up_s)++;
           id(join_s) = WiFi.status() == WL_CONNECTED ? 0 : id(join_s) + 1;
-          const bool at_desk = id(presence).state && id(distance).state <= id(desk_cm).state;
+          const bool seen = id(presence).state;
+          const bool at_desk = seen && id(distance).state <= id(desk_cm).state;
           if (at_desk) {
+            const int a = id(away_s);
+            if ((a >= 3600 && id(away_night)) || a >= 6 * 3600) {   // a new day
+              id(today_s) = id(today_sits) = id(today_longest) = id(today_breaks) = 0;
+            }
+            id(away_s) = 0;
+            id(away_night) = false;
             if (id(sit_s) == 0) id(today_sits)++;
             id(sit_s)++;
             id(today_s)++;
             if (id(sit_s) > id(today_longest)) id(today_longest) = id(sit_s);
             id(still_s) = id(moving).state ? 0 : id(still_s) + 1;
-            id(away_s) = 0;
-          } else {
+          } else if (!seen) {   // FAR changes nothing: a pause
             id(still_s) = 0;
+            auto now = id(wall_clock).now();
+            if (now.is_valid() && (now.hour >= 22 || now.hour < 6)) id(away_night) = true;
             if (++id(away_s) == 300 && id(sit_s) > 0) {
               id(sit_s) = 0;
               id(today_breaks)++;
@@ -69,16 +82,6 @@ interval:
 time:
   - platform: sntp
     id: wall_clock
-    on_time:
-      - seconds: 0
-        minutes: 0
-        hours: 0
-        then:
-          - lambda: |-
-              id(today_s) = 0;
-              id(today_sits) = id(sit_s) > 0 ? 1 : 0;
-              id(today_longest) = id(sit_s);
-              id(today_breaks) = 0;
 
 sensor:
   - platform: template
