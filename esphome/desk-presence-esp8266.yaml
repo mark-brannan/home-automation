@@ -69,7 +69,7 @@ display:
     update_interval: 1s
     lambda: |-
       it.printf("%02d.%02d", (id(sit_s) / 60) % 100, id(sit_s) % 60);
-  # 0 sitting timer; 1 distance, motion, breathing, 4 s each (blank when away); 2 halmet's row 0
+  # 0 sitting timer; 1 distance / micro macro (blank when away); 2 halmet's row 0
   # (symphony firmware/halmet main.cpp), only while joining and 5 min after;
   # 3 restart reason for 30 s after a reset, JOINING, UNABLE TO JOIN after
   # 2 min, else uptime.
@@ -92,13 +92,9 @@ display:
       }
 
       // 1: distance
-      if (id(presence).state) {
-        switch ((up / 4) % 3) {
-          case 0: it.printf(0, 16, f, "Distance %.0f cm", cm); break;
-          case 1: it.printf(0, 16, f, "Motion %.0f", id(move_e).state); break;      // 0-100, no unit
-          default: it.printf(0, 16, f, "Breathing %.0f", id(still_e).state);       // still energy, 0-100
-        }
-      }
+      // micro-motion (still energy) then macro-motion (move energy), 0-100
+      if (id(presence).state)
+        it.printf(0, 16, f, "Dist: %.0fcm / %.0f %.0f", cm, id(still_e).state, id(move_e).state);
 
       // 2: halmet's row 0, only while joining and for 5 min after joining
       static uint32_t tick = 0;
