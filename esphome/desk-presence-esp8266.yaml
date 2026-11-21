@@ -62,17 +62,33 @@ font:
     size: 12
 
 display:
+  # At the desk: the sitting time. FAR or away: it flashes frozen (halmet's burst, 6 x 150 ms
+  # on/off, then 4 s steady), then counts the 5 min break down; at 0 the sitting is cleared.
   - platform: tm1637
     clk_pin: GPIO14   # D5
     dio_pin: GPIO12   # D6
     intensity: 3
-    update_interval: 1s
+    update_interval: 150ms
     lambda: |-
-      it.printf("%02d.%02d", (id(sit_s) / 60) % 100, id(sit_s) % 60);
-  # 0 sitting timer; 1 distance / micro macro (blank when away); 2 halmet's row 0
-  # (symphony firmware/halmet main.cpp), only while joining and 5 min after;
-  # 3 restart reason for 30 s after a reset, JOINING, UNABLE TO JOIN after
-  # 2 min, else uptime.
+      static uint32_t since = 0;
+      static bool gone = false;
+      int shown = id(sit_s);
+      if (id(gone_s) == 0) {
+        gone = false;
+      } else if (id(sit_s) > 0) {
+        if (!gone) { gone = true; since = millis(); }
+        const uint32_t t = millis() - since;
+        if (t < 1800) {
+          if (t % 300 >= 150) return;   // dark half of a flash
+        } else if (t >= 5800) {
+          shown = std::max(0, 306 - id(gone_s));
+        }
+      }
+      it.printf("%02d.%02d", (shown / 60) % 100, shown % 60);
+  # 0 sitting timer; 1 distance / micro macro (blank when away); 2 uptime;
+  # 3 restart reason for 30 s after a reset, else the network, 4 s each:
+  # joining: JOINING Ns (UNABLE TO JOIN after 2 min), host, MAC;
+  # joined: host, IP, MAC, SSID / signal.
   - platform: ssd1306_i2c
     model: "SSD1306 128x64"   # an SH1106 needs model: "SH1106 128x64"
     address: 0x3C
@@ -96,28 +112,13 @@ display:
       if (id(presence).state)
         it.printf(0, 16, f, "Dist: %.0fcm / %.0f %.0f", cm, id(still_e).state, id(move_e).state);
 
-      // 2: halmet's row 0, only while joining and for 5 min after joining
+      // 2: uptime
+      it.printf(0, 32, f, "Uptime: %ud %02u:%02u:%02u", up / 86400, up / 3600 % 24, up / 60 % 60, up % 60);
+
+      // 3: restart reason at boot, then the network (halmet's row 0 pattern)
       static uint32_t tick = 0;
-      static uint32_t online_s = 0;   // seconds since Wi-Fi joined
       tick++;
       const bool online = WiFi.status() == WL_CONNECTED;
-      online_s = online ? online_s + 1 : 0;
-      if (!online || online_s < 300) {
-        switch ((tick / 4) % 4) {
-          case 0: it.printf(0, 32, f, "Host: %s", App.get_name().c_str()); break;
-          case 1: it.printf(0, 32, f, "IP: %s", WiFi.localIP().toString().c_str()); break;
-          case 2: it.print(0, 32, f, WiFi.macAddress().c_str()); break;
-          default: {
-            if (WiFi.status() != WL_CONNECTED) { it.print(0, 32, f, "not connected"); break; }
-            String tail = " / " + String(WiFi.RSSI()) + "dB";
-            String ssid = WiFi.SSID();
-            ssid = ssid.substring(0, 21 - tail.length());  // 21 chars fit the 128 px row
-            it.print(0, 32, f, (ssid + tail).c_str());
-          }
-        }
-      }
-
-      // 3: restart reason at boot, then Wi-Fi state or uptime
       const char *why = nullptr;
       switch (ESP.getResetInfoPtr()->reason) {
         case REASON_DEFAULT_RST: break;   // power on: nothing to say
@@ -129,7 +130,27 @@ display:
         case REASON_EXT_SYS_RST: why = "ext pin"; break;
         default: why = "unknown";
       }
-      if (why && up < 30) it.printf(0, 48, f, "Restart: %s", why);
-      else if (!online && id(join_s) >= 120) it.print(0, 48, f, "UNABLE TO JOIN");
-      else if (!online) it.printf(0, 48, f, "JOINING %ds", id(join_s));
-      else it.printf(0, 48, f, "Uptime: %ud %02u:%02u:%02u", up / 86400, up / 3600 % 24, up / 60 % 60, up % 60);
+      if (why && up < 30) {
+        it.printf(0, 48, f, "Restart: %s", why);
+      } else if (!online) {
+        switch ((tick / 4) % 3) {
+          case 0:
+            if (id(join_s) >= 120) it.print(0, 48, f, "UNABLE TO JOIN");
+            else it.printf(0, 48, f, "JOINING %ds", id(join_s));
+            break;
+          case 1: it.printf(0, 48, f, "Host: %s", App.get_name().c_str()); break;
+          default: it.print(0, 48, f, WiFi.macAddress().c_str());
+        }
+      } else {
+        switch ((tick / 4) % 4) {
+          case 0: it.printf(0, 48, f, "Host: %s", App.get_name().c_str()); break;
+          case 1: it.printf(0, 48, f, "IP: %s", WiFi.localIP().toString().c_str()); break;
+          case 2: it.print(0, 48, f, WiFi.macAddress().c_str()); break;
+          default: {
+            String tail = " / " + String(WiFi.RSSI()) + "dB";
+            String ssid = WiFi.SSID();
+            ssid = ssid.substring(0, 21 - tail.length());  // 21 chars fit the 128 px row
+            it.print(0, 48, f, (ssid + tail).c_str());
+          }
+        }
+      }

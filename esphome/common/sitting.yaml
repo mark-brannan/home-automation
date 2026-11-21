@@ -1,6 +1,6 @@
 # Sitting timer: counts while the radar sees you within Desk distance; pauses while
-# FAR (seen past it); while away (past the radar's range) holds, and clears after
-# 5 min away. "Today" rolls over on your return from a night's absence, not at
+# FAR (seen past it) or away (past the radar's range), and clears after 306 s of
+# either (6 s for the display's flash, then a 5 min break). "Today" rolls over on your return from a night's absence, not at
 # midnight: away 1 h or more with some of it in 22:00-06:00, or 6 h with no clock.
 # Needs presence, moving, distance from common/ld2410.yaml. Published to Home Assistant.
 globals:
@@ -8,6 +8,9 @@ globals:
     type: int
     initial_value: "0"
   - id: away_s         # seconds away since you left; counts up without a cap
+    type: int
+    initial_value: "0"
+  - id: gone_s         # seconds not at the desk (FAR or away), this absence
     type: int
     initial_value: "0"
   - id: still_s        # seconds at the desk since the radar last saw you move
@@ -63,20 +66,23 @@ interval:
               id(today_s) = id(today_sits) = id(today_longest) = id(today_breaks) = 0;
             }
             id(away_s) = 0;
+            id(gone_s) = 0;
             id(away_night) = false;
             if (id(sit_s) == 0) id(today_sits)++;
             id(sit_s)++;
             id(today_s)++;
             if (id(sit_s) > id(today_longest)) id(today_longest) = id(sit_s);
             id(still_s) = id(moving).state ? 0 : id(still_s) + 1;
-          } else if (!seen) {   // FAR changes nothing: a pause
+          }
+          if (!at_desk && ++id(gone_s) == 306 && id(sit_s) > 0) {   // 6 s flash + 5 min break
+            id(sit_s) = 0;
+            id(today_breaks)++;
+          }
+          if (!at_desk && !seen) {
             id(still_s) = 0;
             auto now = id(wall_clock).now();
             if (now.is_valid() && (now.hour >= 22 || now.hour < 6)) id(away_night) = true;
-            if (++id(away_s) == 300 && id(sit_s) > 0) {
-              id(sit_s) = 0;
-              id(today_breaks)++;
-            }
+            id(away_s)++;
           }
 
 time:
