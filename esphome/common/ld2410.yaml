@@ -10,6 +10,7 @@ binary_sensor:
       id: presence
     has_moving_target:
       name: Moving Target
+      id: moving
     has_still_target:
       name: Still Target
 
@@ -24,8 +25,10 @@ sensor:
       name: Still Distance
     moving_energy:
       name: Moving Energy
+      id: move_e
     still_energy:
       name: Still Energy
+      id: still_e
     # Per-gate energies, for setting each gate's thresholds. They report
     # only while Engineering Mode is on.
     g0:

@@ -1,23 +1,84 @@
-# Sitting timer: counts while the radar sees you; holds while away; clears after 5 min away.
-# Needs the presence binary sensor id from common/ld2410.yaml. Published to Home Assistant for nags and metrics.
+# Sitting timer: counts while the radar sees you within Desk distance; holds while
+# away (FAR, or past the radar's range); clears after 5 min away.
+# Needs presence, moving, distance from common/ld2410.yaml. Published to Home Assistant.
 globals:
-  - id: sit_s
+  - id: sit_s          # seconds at the desk, this sitting
     type: int
     initial_value: "0"
-  - id: away_s
+  - id: away_s         # seconds away since you left; counts up without a cap
     type: int
     initial_value: "0"
+  - id: still_s        # seconds at the desk since the radar last saw you move
+    type: int
+    initial_value: "0"
+  - id: up_s           # uptime; millis() wraps at 49.7 days
+    type: uint32_t
+    initial_value: "0"
+  - id: join_s         # seconds since Wi-Fi was last connected
+    type: int
+    initial_value: "0"
+  - id: today_s        # seconds at the desk today
+    type: int
+    initial_value: "0"
+  - id: today_sits     # sittings started today
+    type: int
+    initial_value: "0"
+  - id: today_longest  # longest sitting today, seconds
+    type: int
+    initial_value: "0"
+  - id: today_breaks   # absences of 5 min or more today
+    type: int
+    initial_value: "0"
+
+# Beyond this the radar still sees you, but you are FAR, not at the desk.
+# Widen Max Move/Still Distance Gate past it, or FAR never shows.
+number:
+  - platform: template
+    name: Desk distance
+    id: desk_cm
+    unit_of_measurement: cm
+    min_value: 30
+    max_value: 600
+    step: 5
+    initial_value: 120
+    restore_value: true
+    optimistic: true
 
 interval:
   - interval: 1s
     then:
       - lambda: |-
-          if (id(presence).state) {
+          id(up_s)++;
+          id(join_s) = WiFi.status() == WL_CONNECTED ? 0 : id(join_s) + 1;
+          const bool at_desk = id(presence).state && id(distance).state <= id(desk_cm).state;
+          if (at_desk) {
+            if (id(sit_s) == 0) id(today_sits)++;
             id(sit_s)++;
+            id(today_s)++;
+            if (id(sit_s) > id(today_longest)) id(today_longest) = id(sit_s);
+            id(still_s) = id(moving).state ? 0 : id(still_s) + 1;
             id(away_s) = 0;
-          } else if (id(away_s) < 300 && ++id(away_s) >= 300) {
-            id(sit_s) = 0;
+          } else {
+            id(still_s) = 0;
+            if (++id(away_s) == 300 && id(sit_s) > 0) {
+              id(sit_s) = 0;
+              id(today_breaks)++;
+            }
           }
+
+time:
+  - platform: sntp
+    id: wall_clock
+    on_time:
+      - seconds: 0
+        minutes: 0
+        hours: 0
+        then:
+          - lambda: |-
+              id(today_s) = 0;
+              id(today_sits) = id(sit_s) > 0 ? 1 : 0;
+              id(today_longest) = id(sit_s);
+              id(today_breaks) = 0;
 
 sensor:
   - platform: template
@@ -36,3 +97,19 @@ sensor:
     accuracy_decimals: 0
     update_interval: 10s
     lambda: return id(away_s);
+  - platform: template
+    name: Still seconds
+    unit_of_measurement: s
+    device_class: duration
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: 10s
+    lambda: return id(still_s);
+  - platform: template
+    name: Desk seconds today
+    unit_of_measurement: s
+    device_class: duration
+    state_class: total_increasing
+    accuracy_decimals: 0
+    update_interval: 60s
+    lambda: return id(today_s);
