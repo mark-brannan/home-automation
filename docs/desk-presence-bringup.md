@@ -47,7 +47,7 @@ esphome run esphome/desk-presence.yaml     # first flash over USB (or desk-prese
 rm esphome/secrets.yaml                    # when done
 ```
 
-Later flashes go over the air. Quick look: http://desk-presence.local/ (plain HTTP on the LAN; log in as `admin` with `web_password` from the decrypted secrets).
+Later flashes go over the air, so the D8 wire stays put: `esphome upload esphome/desk-presence-esp8266.yaml --device <its IP>`. Use the IP; WSL2 does not resolve `.local`, so reserve one in the router's DHCP. Over the air needs the board on Wi-Fi, so the USB flash must carry the real Wi-Fi secrets. Quick look: http://desk-presence.local/ (plain HTTP on the LAN; log in as `admin` with `web_password` from the decrypted secrets).
 
 ## Tuning (no reflash)
 
