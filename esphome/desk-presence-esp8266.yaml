@@ -69,7 +69,7 @@ display:
     update_interval: 1s
     lambda: |-
       it.printf("%02d.%02d", (id(sit_s) / 60) % 100, id(sit_s) % 60);
-  # 0 sitting timer; 1 desk distance and radar energies; 2 halmet's row 0
+  # 0 sitting timer; 1 distance to you (blank when away); 2 halmet's row 0
   # (symphony firmware/halmet main.cpp), only while joining and 5 min after;
   # 3 restart reason for 30 s after a reset, JOINING, UNABLE TO JOIN after
   # 2 min, else uptime.
@@ -91,10 +91,8 @@ display:
         it.printf(0, 0, f, "AWAY %d:%02d", a / 60, a % 60);
       }
 
-      // 1: radar
-      if (!id(presence).state) it.print(0, 16, f, "no target");
-      else if ((up / 4) % 2) it.printf(0, 16, f, "Move %.0f Still %.0f", id(move_e).state, id(still_e).state);
-      else it.printf(0, 16, f, "%.0f cm", cm);
+      // 1: distance
+      if (id(presence).state) it.printf(0, 16, f, "Distance %.0f cm", cm);
 
       // 2: halmet's row 0, only while joining and for 5 min after joining
       static uint32_t tick = 0;
