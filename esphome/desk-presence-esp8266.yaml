@@ -70,17 +70,16 @@ display:
     intensity: 3
     update_interval: 150ms
     lambda: |-
-      static uint32_t since = 0;
-      static bool gone = false;
+      static uint32_t since = 0;   // when the burst ended
+      static int n = 0;            // frames since leaving the desk
       int shown = id(sit_s);
       if (id(gone_s) == 0) {
-        gone = false;
+        n = 0;
       } else if (id(sit_s) > 0) {
-        if (!gone) { gone = true; since = millis(); }
-        const uint32_t t = millis() - since;
-        if (t < 1800) {
-          if (t % 300 >= 150) return;   // dark half of a flash
-        } else if (t >= 5800) {
+        if (n < 12) {              // burst: counted in frames, so no half is cut short by a late one
+          if (++n == 12) since = millis();
+          if (n % 2 == 0) return;  // dark half of a flash (frame 1 lit)
+        } else if (millis() - since >= 4000) {
           shown = std::max(0, 306 - id(gone_s));
         }
       }

@@ -31,7 +31,7 @@ globals:
   - id: today_longest  # longest sitting today, seconds
     type: int
     initial_value: "0"
-  - id: today_breaks   # absences of 5 min or more today
+  - id: today_breaks   # absences (FAR or away) long enough to clear a sitting, today
     type: int
     initial_value: "0"
   - id: away_night     # this absence has touched 22:00-06:00
