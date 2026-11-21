@@ -18,6 +18,7 @@ packages:
   logger: !include common/logger.yaml
   web: !include common/web.yaml
   radar: !include common/ld2410.yaml
+  sitting: !include common/sitting.yaml
 
 # The ESP8266 has one full hardware UART, and 256000 baud is too fast for
 # software serial. The radar takes UART0 on its swapped pins, so the logger
@@ -43,3 +44,33 @@ sensor:
   - platform: debug
     free:
       name: Free Heap
+
+# Sitting timer and its two displays (TM1637 and SSD1306 OLED).
+# Pins: workshop projects/desk-presence-sensor/README.md, Wiring table.
+i2c:
+  sda: GPIO4   # D2
+  scl: GPIO5   # D1
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 14
+
+display:
+  - platform: tm1637
+    clk_pin: GPIO14   # D5
+    dio_pin: GPIO12   # D6
+    intensity: 3
+    update_interval: 1s
+    lambda: |-
+      it.printf("%02d.%02d", (id(sit_s) / 60) % 100, id(sit_s) % 60);
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"   # an SH1106 needs model: "SH1106 128x64"
+    address: 0x3C
+    update_interval: 1s
+    lambda: |-
+      it.printf(0, 0, id(roboto), "SITTING %d:%02d", id(sit_s) / 60, id(sit_s) % 60);
+      if (id(presence).state)
+        it.printf(0, 22, id(roboto), "PRESENT %.0f cm", id(distance).state);
+      else
+        it.printf(0, 22, id(roboto), "AWAY");

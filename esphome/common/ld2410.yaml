@@ -7,6 +7,7 @@ binary_sensor:
   - platform: ld2410
     has_target:
       name: Presence
+      id: presence
     has_moving_target:
       name: Moving Target
     has_still_target:
@@ -16,6 +17,7 @@ sensor:
   - platform: ld2410
     detection_distance:
       name: Detection Distance
+      id: distance
     moving_distance:
       name: Moving Distance
     still_distance:

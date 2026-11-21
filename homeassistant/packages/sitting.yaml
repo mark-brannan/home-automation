@@ -1,0 +1,36 @@
+# Home Assistant package: sitting nags and metrics for the desk presence sensor.
+# Drop in <config>/packages/ (homeassistant: packages: !include_dir_named packages).
+# Entity ids follow ESPHome's naming for device "desk-presence"; confirm them in Developer Tools > States.
+# notify.ntfy is a placeholder: use whatever notify service reaches your phone.
+
+automation:
+  - id: sitting_nag_50
+    alias: Sitting nag, 50 minutes
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.desk_presence_sitting_seconds
+        above: 3000
+    actions:
+      - action: notify.ntfy
+        data:
+          title: Stand up
+          message: Sat 50 minutes.
+
+  - id: sitting_nag_90
+    alias: Sitting nag, 90 minutes
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.desk_presence_sitting_seconds
+        above: 5400
+    actions:
+      - action: notify.ntfy
+        data:
+          title: Stand up, properly
+          message: Sat 90 minutes.
+
+# Metrics: merge into the existing influxdb: block, or use `prometheus:` instead.
+# influxdb:
+#   include:
+#     entity_globs:
+#       - sensor.desk_presence_*
+#       - binary_sensor.desk_presence_*

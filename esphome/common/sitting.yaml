@@ -1,0 +1,38 @@
+# Sitting timer: counts while the radar sees you; holds while away; clears after 5 min away.
+# Needs the presence binary sensor id from common/ld2410.yaml. Published to Home Assistant for nags and metrics.
+globals:
+  - id: sit_s
+    type: int
+    initial_value: "0"
+  - id: away_s
+    type: int
+    initial_value: "0"
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          if (id(presence).state) {
+            id(sit_s)++;
+            id(away_s) = 0;
+          } else if (id(away_s) < 300 && ++id(away_s) >= 300) {
+            id(sit_s) = 0;
+          }
+
+sensor:
+  - platform: template
+    name: Sitting seconds
+    unit_of_measurement: s
+    device_class: duration
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: 10s
+    lambda: return id(sit_s);
+  - platform: template
+    name: Away seconds
+    unit_of_measurement: s
+    device_class: duration
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: 10s
+    lambda: return id(away_s);
