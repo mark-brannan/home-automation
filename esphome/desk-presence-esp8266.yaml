@@ -55,10 +55,11 @@ i2c:
   sda: GPIO4   # D2
   scl: GPIO5   # D1
 
-# Halmet's font: Adafruit GFX's built-in 5x7 in a 6x8 cell, 8 rows of 21 characters.
+# A step up from halmet's 5x7: letters 9 px tall, four rows 16 px apart.
 font:
-  - file: fonts/glcd5x7.bdf
-    id: glcd
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 12
 
 display:
   - platform: tm1637
@@ -68,14 +69,14 @@ display:
     update_interval: 1s
     lambda: |-
       it.printf("%02d.%02d", (id(sit_s) / 60) % 100, id(sit_s) % 60);
-  # Halmet's layout (symphony firmware/halmet main.cpp): 8 px rows; rotating
+  # Halmet's rows (symphony firmware/halmet main.cpp), 16 px apart; rotating
   # rows step every 4 s. 0 presence, 1 network, 2 uptime, 3 restart reason.
   - platform: ssd1306_i2c
     model: "SSD1306 128x64"   # an SH1106 needs model: "SH1106 128x64"
     address: 0x3C
     update_interval: 1s
     lambda: |-
-      auto f = id(glcd);
+      auto f = id(roboto);
       const uint32_t up = id(up_s);
       const uint32_t beat = up / 4;
 
@@ -92,22 +93,22 @@ display:
 
       if (WiFi.status() == WL_CONNECTED) {
         switch (beat % 4) {
-          case 0: it.printf(0, 8, f, "Host: %s", App.get_name().c_str()); break;
-          case 1: it.printf(0, 8, f, "IP: %s", WiFi.localIP().toString().c_str()); break;
-          case 2: it.print(0, 8, f, WiFi.macAddress().c_str()); break;
+          case 0: it.printf(0, 16, f, "Host: %s", App.get_name().c_str()); break;
+          case 1: it.printf(0, 16, f, "IP: %s", WiFi.localIP().toString().c_str()); break;
+          case 2: it.print(0, 16, f, WiFi.macAddress().c_str()); break;
           default: {
             char tail[12];
             snprintf(tail, sizeof tail, " / %ddB", (int) WiFi.RSSI());
-            it.printf(0, 8, f, "%.*s%s", 21 - (int) strlen(tail), WiFi.SSID().c_str(), tail);
+            it.printf(0, 16, f, "%.*s%s", 17 - (int) strlen(tail), WiFi.SSID().c_str(), tail);
           }
         }
       } else if ((WiFi.getMode() & WIFI_AP) && beat % 2) {
-        it.print(0, 8, f, "AP FALLBACK");
+        it.print(0, 16, f, "AP FALLBACK");
       } else {
-        it.printf(0, 8, f, "JOINING %ds", id(join_s));
+        it.printf(0, 16, f, "JOINING %ds", id(join_s));
       }
 
-      it.printf(0, 16, f, "Uptime: %ud %02u:%02u:%02u", up / 86400, up / 3600 % 24, up / 60 % 60, up % 60);
+      it.printf(0, 32, f, "Uptime: %ud %02u:%02u:%02u", up / 86400, up / 3600 % 24, up / 60 % 60, up % 60);
 
       const char *why = nullptr;
       switch (ESP.getResetInfoPtr()->reason) {
@@ -120,4 +121,4 @@ display:
         case REASON_EXT_SYS_RST: why = "ext pin"; break;
         default: why = "unknown";
       }
-      if (why) it.printf(0, 24, f, "Restart: %s", why);
+      if (why) it.printf(0, 48, f, "Restart: %s", why);
