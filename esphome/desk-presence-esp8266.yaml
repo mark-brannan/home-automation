@@ -72,11 +72,10 @@ display:
     lambda: |-
       static uint32_t since = 0;
       static bool gone = false;
-      const bool at_desk = id(presence).state && id(distance).state <= id(desk_cm).state;
       int shown = id(sit_s);
-      if (at_desk) {
+      if (id(gone_s) == 0) {
         gone = false;
-      } else {
+      } else if (id(sit_s) > 0) {
         if (!gone) { gone = true; since = millis(); }
         const uint32_t t = millis() - since;
         if (t < 1800) {

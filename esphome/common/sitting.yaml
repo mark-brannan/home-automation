@@ -1,6 +1,6 @@
 # Sitting timer: counts while the radar sees you within Desk distance; pauses while
-# FAR (seen past it); FAR or away, the display flashes the time, then counts down
-# a 5 min break, and clears the sitting at zero. "Today" rolls over on your return from a night's absence, not at
+# FAR (seen past it) or away (past the radar's range), and clears after 306 s of
+# either (6 s for the display's flash, then a 5 min break). "Today" rolls over on your return from a night's absence, not at
 # midnight: away 1 h or more with some of it in 22:00-06:00, or 6 h with no clock.
 # Needs presence, moving, distance from common/ld2410.yaml. Published to Home Assistant.
 globals:
